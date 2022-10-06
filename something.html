@@ -15,6 +15,7 @@
 		<h2>Search by Id</h2>
 		<input type="text" id="prodId" size="5" />
 		<input type="button" value="Search" onclick="find();" />
+		<input type="button" value="Crude" onclick="crude();" />
 		<p id="product"></p>
 	</div>
 	<script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.4.min.js">
@@ -44,7 +45,6 @@
 			function find(){
 				var id = $('#prodId').val();
 				$.getJSON(uri + 'product/' + id).done(function (data) {
-					console.log(data); 
 					$('#product').text(formatItem(data[0])); 
 				})
 				.fail(function (jqxhr, textStatus, error) {
@@ -52,7 +52,166 @@
 						alert("request failed! : ", err); 
 					}
 				);
-			} //find()
+			}
+			function crude(params) {
+				//append to #product a select input with the options: create, update, delete
+				//when the user selects an option, call the corresponding function
+				//create: call createProduct()
+				//update: call updateProduct()
+				//delete: call deleteProduct()
+				var select = $('<select>', { id: 'crud' }).appendTo($('#product'));
+				$('<option>', { text: 'Create', value: 'create' }).appendTo(select);
+				$('<option>', { text: 'Update', value: 'update' }).appendTo(select);
+				$('<option>', { text: 'Delete', value: 'delete' }).appendTo(select);
+				$(select).change(function () {
+					var option = $(this).val();
+					if (option == 'create') {
+						createProduct();
+					}
+					else if (option == 'update') {
+						updateProduct();
+					}
+					else if (option == 'delete') {
+						deleteProduct();
+					}
+				});
+			}
+			function createProduct(){
+				cleanUp(true);
+				//create divs containing a label and an input for id, name, category and price
+				var divId = $('<div>', { id: 'divId' }).appendTo($('#product'));
+				$('<label>', { text: 'Id: ' }).appendTo(divId);
+				var id = $('<input>', { id: 'id', type: 'text', size: '5' }).appendTo($('#divId'));
+				var divName = $('<div>', { id: 'divName' }).appendTo($('#product'));
+				$('<label>', { text: 'Name: ' }).appendTo(divName);
+				var name = $('<input>', { id: 'name', type: 'text', size: '20' }).appendTo($('#divName'));
+				
+				var divCategory = $('<div>', { id: 'divCategory' }).appendTo($('#product'));
+				$('<label>', { text: 'Category: ' }).appendTo(divCategory);
+				var category = $('<input>', { id: 'category', type: 'text', size: '20' }).appendTo($('#divCategory'));
+				var divPrice = $('<div>', { id: 'divPrice' }).appendTo($('#product'));
+				$('<label>', { text: 'Price: ' }).appendTo(divPrice);
+				var price = $('<input>', { id: 'price', type: 'text', size: '20' }).appendTo($('#divPrice'));
+
+				
+				var button = $('<input>', { id: 'button', type: 'button', value: 'Submit' }).appendTo($('#product'));
+				$(button).click(function () {
+					var product = [{
+						Id: $(id).val(),
+						Name: $(name).val(),
+						Category: $(category).val(),
+						Price: $(price).val()
+				}];
+					$.ajax({
+						url: uri + 'product/',
+						type: 'POST',
+						data: JSON.stringify(product[0]),
+						contentType: 'application/json; charset=utf-8',
+						dataType: 'json',
+						success: function (data) {
+							console.log(data);
+							$('#product').text(formatItem(data));
+						},
+						error: function (jqxhr, textStatus, error) {
+							var err = textStatus + ", " + error;
+							alert("request failed! : ", err);
+						}
+					});
+				});
+			}
+			function updateProduct(){
+				cleanUp(true);
+				var divId = $('<div>', { id: 'divId' }).appendTo($('#product'));
+				$('<label>', { text: 'Id: ' }).appendTo(divId);
+				var id = $('<input>', { id: 'id', type: 'text', size: '5' }).appendTo($('#divId'));
+				
+				var button = $('<input>', { id: 'button', type: 'button', value: 'Fetch Data' }).appendTo($('#product'));
+				
+				$(button).click(function () {
+				 	//search the api for a product with the given id, if it exists fill the inputs with the product data
+					var id = $('#id').val();
+					$.getJSON(uri + 'product/' + id).done(function (data) {
+						console.log(data); 
+						var divName = $('<div>', { id: 'divName' }).appendTo($('#product'));
+						$('<label>', { text: 'Name: ' }).appendTo(divName);
+						var name = $('<input>', { id: 'name', type: 'text', size: '20', value:data[0].name}).appendTo($('#divName'));
+						
+						var divCategory = $('<div>', { id: 'divCategory' }).appendTo($('#product'));
+						$('<label>', { text: 'Category: ' }).appendTo(divCategory);
+						var category = $('<input>', { id: 'category', type: 'text', size: '20', value:data[0].category }).appendTo($('#divCategory'));
+						var divPrice = $('<div>', { id: 'divPrice' }).appendTo($('#product'));
+						$('<label>', { text: 'Price: ' }).appendTo(divPrice);
+						var price = $('<input>', { id: 'price', type: 'text', size: '20', value:data[0].price }).appendTo($('#divPrice'));
+
+						var button = $('<input>', { id: 'button2', type: 'button', value: 'Submit' }).appendTo($('#product'));
+						$(button).click(function () {
+							var product = [{
+								Id: id,
+								Name: $(name).val(),
+								Category: $(category).val(),
+								Price: $(price).val()
+							}];
+							$.ajax({
+								url: uri + 'product/'+id,
+								type: 'PUT',
+								data: JSON.stringify(product[0]),
+								contentType: 'application/json; charset=utf-8',
+								dataType: 'json',
+								success: function (data) {
+									console.log(data);
+									$('#product').text(formatItem(data[0]));
+								},
+								error: function (jqxhr, textStatus, error) {
+									var err = textStatus + ", " + error;
+									alert("request failed! : ", err);
+								}
+							});
+						});
+						
+					})
+					.fail(function (jqxhr, textStatus, error) {
+						var err = textStatus + ", " + error;
+						console.log("request failed! : ", err); 
+						cleanUp(false);
+					}
+				);
+				});
+			}
+			function deleteProduct(id){
+				
+				cleanUp(true);
+				var divId = $('<div>', { id: 'divId' }).appendTo($('#product'));
+				$('<label>', { text: 'Id: ' }).appendTo(divId);
+				var id = $('<input>', { id: 'id', type: 'text', size: '5' }).appendTo($('#divId'));
+				var button = $('<input>', { id: 'button', type: 'button', value: 'Delete' }).appendTo($('#product'));
+				$(button).click(function () {
+					var id = $('#id').val();
+					$.ajax({
+						url: uri + 'product/'+id,
+						type: 'DELETE',
+						success: function (data) {
+							console.log(data);
+							$('#product').text(formatItem(data[0]));
+						},
+						error: function (jqxhr, textStatus, error) {
+							var err = textStatus + ", " + error;
+							alert("request failed! : ", err);
+						}
+					});
+				});
+
+			}
+			function cleanUp(id){
+				if(id===true){
+					$('#divId').remove();
+				}
+				//removes divName, divCategory, divPrice and their children
+				$('#divName').remove();
+				$('#divCategory').remove();
+				$('#divPrice').remove();
+				$('#button').remove();
+			}
+			 //find()
 			</script>
 </body>
 

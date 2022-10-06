@@ -34,16 +34,16 @@ namespace ProductsAPI.Controllers{
 		}
 		//POST, PUT and DELETE
 		[HttpPost("product")]
-		
-		public IActionResult PostProduct([FromForm]Product product){
+		public IActionResult PostProduct([FromBody]Product product){
 			//Console.Write("fuck");
 			//fetch data from db
 			_context.Products.Add(product);
 			_context.SaveChanges();
 			return Ok(product);
 		}
+		
 		[HttpPut("product/{id}")]
-		public IActionResult PutProduct(int id, [FromForm]Product product){
+		public IActionResult PutProduct(int id, [FromBody]Product product){
 			//Console.Write("fuck");
 			//fetch data from db
 			var ret = _context.Products.Where(p => p.Id == id);
