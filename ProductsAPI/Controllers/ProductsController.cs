@@ -32,5 +32,42 @@ namespace ProductsAPI.Controllers{
 			return Ok(ret);
 			//Respecting HTTP errors (200 OK)}
 		}
+		//POST, PUT and DELETE
+		[HttpPost("product")]
+		
+		public IActionResult PostProduct([FromForm]Product product){
+			//Console.Write("fuck");
+			//fetch data from db
+			_context.Products.Add(product);
+			_context.SaveChanges();
+			return Ok(product);
+		}
+		[HttpPut("product/{id}")]
+		public IActionResult PutProduct(int id, [FromForm]Product product){
+			//Console.Write("fuck");
+			//fetch data from db
+			var ret = _context.Products.Where(p => p.Id == id);
+			if(ret.Count() == 0 || ret.First().Id != id){
+				return NotFound("No such product dingus");
+			}
+			ret.First().Name = product.Name;
+			ret.First().Category = product.Category;
+			ret.First().Price = product.Price;
+			_context.SaveChanges();
+			return Ok(ret);
+		}
+		[HttpDelete("product/{id}")]
+		public IActionResult DeleteProduct(int id){
+			//Console.Write("fuck");
+			//fetch data from db
+			var ret = _context.Products.Where(p => p.Id == id);
+			if(ret.Count() == 0 || ret.First().Id != id){
+				return NotFound("No such product dingus");
+			}
+			_context.Products.Remove(ret.First());
+			_context.SaveChanges();
+			return Ok(ret);
+		}
+
 	}
 }
